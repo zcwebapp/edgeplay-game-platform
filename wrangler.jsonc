@@ -22,7 +22,7 @@
     {
       "binding": "DB",
       "database_name": "edgeplay-db",
-      "database_id": "<YOUR-D1-DATABASE-ID-ONCE-CREATED>"
+      "database_id": "3f455e6e-38c9-46d5-ad2e-fc5f3852e762"
     }
   ],
 
