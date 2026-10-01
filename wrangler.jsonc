@@ -1,0 +1,44 @@
+/**
+ * Cloudflare Worker & Static Assets Configuration for EdgePlay Game Platform
+ * Compatibility Date: 2026-10-01
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "edgeplay-game-platform",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+
+  // 1. Workers Static Assets 托管前端静态产物 (HTML/CSS/JS/Games)
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // 2. Cloudflare D1 边缘关系型 SQLite 数据库绑定
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "edgeplay-db",
+      "database_id": "<YOUR-D1-DATABASE-ID-ONCE-CREATED>"
+    }
+  ],
+
+  // 3. Cloudflare R2 对象存储桶绑定 (免出站流量费游戏包/资源/云存档)
+  "r2_buckets": [
+    {
+      "binding": "GAME_ASSETS",
+      "bucket_name": "edgeplay-game-assets"
+    }
+  ],
+
+  // 4. 生产级日志与链路追踪
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "edgeplay-game-platform",
+  "version": "1.0.0",
+  "description": "Cloudflare-native retro arcade web gaming portal with D1 & R2",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:init": "wrangler d1 execute edgeplay-db --local --file=./database/schema.sql",
+    "d1:deploy": "wrangler d1 execute edgeplay-db --remote --file=./database/schema.sql",
+    "r2:create": "wrangler r2 bucket create edgeplay-game-assets",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "cloudflare-d1",
+    "cloudflare-r2",
+    "gaming",
+    "arcade",
+    "retro"
+  ],
+  "author": "EdgePlay Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241004.0",
+    "typescript": "^5.6.2",
+    "wrangler": "^3.80.0"
+  }
+}
