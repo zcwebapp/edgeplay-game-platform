@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgePlay - Global Hall of Fame Leaderboard</title>
+  <link rel="stylesheet" href="css/retro-arcade.css">
+  <style>
+    .board-container {
+      max-width: 1200px;
+      margin: 30px auto 60px;
+      padding: 0 20px;
+    }
+    .board-hero {
+      background: var(--color-surface);
+      border: 4px solid var(--color-border);
+      box-shadow: var(--shadow-pixel-lg);
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .podium-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .podium-card {
+      background: var(--color-console);
+      border: 3px solid var(--color-border);
+      padding: 20px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .podium-card.first {
+      border-color: var(--color-gold);
+      transform: translateY(-8px);
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
+    }
+    .podium-card.second { border-color: #a0a0c0; }
+    .podium-card.third { border-color: #cd7f32; }
+
+    .podium-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 4px;
+      border: 3px solid #000;
+      margin-bottom: 10px;
+    }
+    .table-card {
+      background: var(--color-surface);
+      border: 3px solid var(--color-border);
+      box-shadow: var(--shadow-pixel);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+    th {
+      background: var(--color-console);
+      padding: 12px 16px;
+      color: var(--color-gold);
+      border-bottom: 2px solid var(--color-border);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1c1c2e;
+    }
+    tr:hover td {
+      background: rgba(255, 204, 0, 0.05);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Navbar -->
+  <header style="background: var(--color-surface); border-bottom: 3px solid var(--color-border); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;">
+    <a href="index.html" class="btn-arcade-secondary btn-arcade" onclick="window.retroAudio.playBlip()">
+      ◀ BACK TO ARCADE LOBBY
+    </a>
+    <div style="font-family: var(--font-pixel); font-size: 14px; color: var(--color-gold);">
+      🏆 GLOBAL HALL OF FAME
+    </div>
+    <div></div>
+  </header>
+
+  <main class="board-container">
+    <div class="board-hero">
+      <div style="font-family: var(--font-pixel); font-size: 10px; color: var(--color-cyan); margin-bottom: 8px;">
+        SYNCHRONIZED WITH CLOUDFLARE D1 RELATIONAL DATABASE
+      </div>
+      <h1 style="font-family: var(--font-title); font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 8px;">
+        GLOBAL ARCADE HIGH SCORES
+      </h1>
+      <p style="color: #8888aa; font-size: 14px; max-width: 600px; margin: 0 auto 16px;">
+        Real-time edge verified scores submitted by players across all self-hosted and open-source titles.
+      </p>
+
+      <!-- Game Selector Pills -->
+      <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;" id="gameTabs">
+        <button class="cat-pill active" onclick="switchGame('game-2048')">2048 ARCADE</button>
+        <button class="cat-pill" onclick="switchGame('cyber-snake')">CYBER SNAKE</button>
+        <button class="cat-pill" onclick="switchGame('tetris-classic')">TETRIS</button>
+        <button class="cat-pill" onclick="switchGame('neon-breakout')">BREAKOUT</button>
+        <button class="cat-pill" onclick="switchGame('flappy-bird')">PIXEL BIRD</button>
+      </div>
+    </div>
+
+    <!-- Podium Top 3 -->
+    <div class="podium-section" id="podiumSection">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Scores Table -->
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Record Date</th>
+          </tr>
+        </thead>
+        <tbody id="scoresTableBody">
+          <!-- Injected via JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="js/audio.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let activeGameId = 'game-2048';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadScores(activeGameId);
+    });
+
+    function switchGame(gameId) {
+      window.retroAudio.playBlip();
+      activeGameId = gameId;
+      document.querySelectorAll('#gameTabs button').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick').includes(gameId));
+      });
+      loadScores(gameId);
+    }
+
+    async function loadScores(gameId) {
+      const scores = await window.edgeplayApi.getLeaderboard(gameId);
+
+      // Render Podium
+      const podium = document.getElementById('podiumSection');
+      const top3 = scores.slice(0, 3);
+      if (top3.length > 0) {
+        podium.innerHTML = `
+          <!-- 2nd Place -->
+          <div class="podium-card second">
+            <span class="badge-pixel" style="background: #a0a0c0; color: #000; margin-bottom: 8px;">🥈 #2 RUNNER UP</span>
+            <img class="podium-avatar" src="${top3[1]?.avatar_url || 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=120&auto=format&fit=crop&q=80'}">
+            <h3 style="font-family: var(--font-title); font-size: 15px; color: #fff;">${top3[1]?.username || 'RETRO_RUNNER'}</h3>
+            <div style="font-family: var(--font-mono); font-size: 14px; color: var(--color-cyan); font-weight: bold; margin-top: 6px;">
+              ${top3[1]?.score_display || (top3[1]?.score ? top3[1].score + ' pts' : '16,384 pts')}
+            </div>
+          </div>
+
+          <!-- 1st Place Champion -->
+          <div class="podium-card first">
+            <span class="badge-pixel badge-gold" style="margin-bottom: 8px;">👑 #1 CHAMPION</span>
+            <img class="podium-avatar" style="width: 76px; height: 76px; border-color: var(--color-gold);" src="${top3[0]?.avatar_url || 'https://lh3.googleusercontent.com/aida/AEtjO1Urik7ct8cP-BhoraN6iIKgfpyEAdRje_6mi3VNEFSg3lshVtJ9bdGW3F25B899480ybNpzhpPj80XjuULkYFJNrJ7mCUPqGWtDooK-Epvdia-nNOaKHdv9RLbWS9ftZom4nRdQFWpDofSzqAuSs4Xyse1XExyP-D3JTXlTQ6bAR-4gN2ihlkwOmpH9CgoVcAWxayUgVRB2f6efv-EawVWRbZFXTqqKr_rJzDvGMS5UqRniZDxz0WzsYhrC'}">
+            <h3 style="font-family: var(--font-title); font-size: 18px; color: #fff;">${top3[0]?.username || 'PIXEL_KING'}</h3>
+            <div style="font-family: var(--font-mono); font-size: 16px; color: var(--color-gold); font-weight: bold; margin-top: 6px;">
+              ${top3[0]?.score_display || (top3[0]?.score ? top3[0].score + ' pts' : '32,768 pts')}
+            </div>
+          </div>
+
+          <!-- 3rd Place -->
+          <div class="podium-card third">
+            <span class="badge-pixel" style="background: #cd7f32; color: #fff; margin-bottom: 8px;">🥉 #3 3RD PLACE</span>
+            <img class="podium-avatar" src="${top3[2]?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80'}">
+            <h3 style="font-family: var(--font-title); font-size: 15px; color: #fff;">${top3[2]?.username || 'CYBER_ACE'}</h3>
+            <div style="font-family: var(--font-mono); font-size: 14px; color: var(--color-cyan); font-weight: bold; margin-top: 6px;">
+              ${top3[2]?.score_display || (top3[2]?.score ? top3[2].score + ' pts' : '8,192 pts')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Render Table
+      const tbody = document.getElementById('scoresTableBody');
+      tbody.innerHTML = scores.map((s, idx) => `
+        <tr>
+          <td style="font-weight: bold; color: ${idx === 0 ? 'var(--color-gold)' : idx < 3 ? 'var(--color-cyan)' : '#888'};">
+            #${idx + 1}
+          </td>
+          <td style="font-weight: 600; color: #fff;">
+            ${s.username || 'PLAYER'}
+          </td>
+          <td style="font-weight: bold; color: var(--color-gold);">
+            ${s.score_display || s.score.toLocaleString() + ' pts'}
+          </td>
+          <td>
+            <span class="badge-pixel ${idx < 3 ? 'badge-green' : 'badge-cyan'}">
+              ${idx < 3 ? 'LEGEND' : 'CHALLENGER'}
+            </span>
+          </td>
+          <td style="color: #666; font-size: 11px;">
+            ${s.created_at ? new Date(s.created_at).toLocaleDateString() : 'TODAY'}
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

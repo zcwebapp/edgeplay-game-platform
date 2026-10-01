@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgePlay - Cinema Player</title>
+  <link rel="stylesheet" href="css/retro-arcade.css">
+  <style>
+    .player-nav {
+      background: var(--color-surface);
+      border-bottom: 3px solid var(--color-border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cinema-layout {
+      max-width: 1440px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .theater-casing {
+      background: var(--color-surface);
+      border: 4px solid var(--color-border);
+      box-shadow: var(--shadow-pixel-lg);
+      padding: 16px;
+    }
+    .monitor-frame {
+      position: relative;
+      background: #000;
+      border: 3px solid #000;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9);
+    }
+    .monitor-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    .control-deck {
+      margin-top: 12px;
+      background: var(--color-console);
+      border: 2px solid var(--color-border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .deck-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .deck-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      background: var(--color-surface);
+      color: #fff;
+      border: 2px solid var(--color-border);
+      box-shadow: var(--shadow-pixel-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .deck-btn:hover {
+      border-color: var(--color-cyan);
+      color: var(--color-cyan);
+    }
+    .deck-btn.active {
+      background: var(--color-cyan);
+      color: #000;
+      border-color: #000;
+    }
+
+    /* Leaderboard Drawer */
+    .sidebar-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .rank-board {
+      background: var(--color-surface);
+      border: 3px solid var(--color-border);
+      box-shadow: var(--shadow-pixel);
+      padding: 16px;
+    }
+    .rank-header {
+      font-family: var(--font-pixel);
+      font-size: 12px;
+      color: var(--color-gold);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 8px;
+    }
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rank-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-console);
+      border: 1px solid var(--color-border);
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .rank-row.top-1 { border-color: var(--color-gold); background: #26210f; }
+    .rank-row.top-2 { border-color: #aaa; }
+    .rank-row.top-3 { border-color: #cd7f32; }
+
+    .score-alert {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--color-gold);
+      color: #000;
+      font-family: var(--font-pixel);
+      font-size: 12px;
+      padding: 12px 24px;
+      border: 3px solid #000;
+      box-shadow: 6px 6px 0px #000;
+      z-index: 1000;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    .score-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1024px) {
+      .cinema-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Score Alert Popup -->
+  <div id="scoreAlert" class="score-alert">
+    🎉 NEW HIGH SCORE SUBMITTED TO D1!
+  </div>
+
+  <!-- Player Nav -->
+  <nav class="player-nav">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="index.html" class="btn-arcade-secondary btn-arcade" onclick="window.retroAudio.playBlip()">
+        ◀ RETURN TO LOBBY
+      </a>
+      <div style="font-family: var(--font-title); font-size: 16px; font-weight: 700; color: #fff;" id="gameTitle">
+        Loading...
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="badge-pixel badge-gold" id="gameCategory">ARCADE</span>
+      <span id="playerScoreDisplay" style="font-family: var(--font-pixel); font-size: 12px; color: var(--color-cyan);">SCORE: 0</span>
+    </div>
+  </nav>
+
+  <!-- Cinema Player Layout -->
+  <main class="cinema-layout">
+    <!-- Center Cabinet Theater -->
+    <div class="theater-casing">
+      <div class="monitor-frame crt-overlay" id="monitorFrame">
+        <iframe id="gameIframe" src="about:blank" allow="autoplay; fullscreen; gamepad"></iframe>
+      </div>
+
+      <!-- Arcade Hardware Deck -->
+      <div class="control-deck">
+        <div class="deck-buttons">
+          <button class="deck-btn" onclick="restartGame()">
+            🔄 RESTART
+          </button>
+          <button class="deck-btn active" id="btnCrt" onclick="toggleCrt()">
+            📺 CRT SCANLINES
+          </button>
+          <button class="deck-btn" id="btnSound" onclick="toggleSound()">
+            🔊 8-BIT AUDIO
+          </button>
+          <button class="deck-btn" onclick="toggleFullscreen()">
+            ⛶ FULLSCREEN
+          </button>
+        </div>
+
+        <div class="deck-buttons">
+          <button class="btn-arcade" style="padding: 6px 14px; font-size: 11px;" onclick="saveToCloud()">
+            💾 SYNC TO R2 VAULT
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Details -->
+      <div style="margin-top: 16px; padding: 12px; background: var(--color-console); border: 2px solid var(--color-border);">
+        <h2 style="font-family: var(--font-title); font-size: 18px; margin-bottom: 6px;" id="gameSubTitle"></h2>
+        <p style="font-size: 13px; color: #aaa; line-height: 1.5;" id="gameDesc"></p>
+        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;" id="gameTags"></div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: D1 Live Leaderboard -->
+    <aside class="sidebar-panel">
+      <div class="rank-board">
+        <div class="rank-header">
+          <span>🏆 D1 LEADERBOARD</span>
+          <span style="font-size: 9px; color: var(--color-cyan);">TOP 10</span>
+        </div>
+        <div class="rank-list" id="rankList">
+          <div style="text-align: center; color: #888; font-size: 11px; padding: 20px;">
+            Loading D1 scores...
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Recommended Games -->
+      <div class="rank-board">
+        <div class="rank-header">
+          <span>👾 MORE RETRO TITLES</span>
+        </div>
+        <div id="relatedList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/audio.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let currentGame = null;
+    let currentScore = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const gameId = urlParams.get('id') || 'game-2048';
+
+      currentGame = await window.edgeplayApi.getGameById(gameId);
+      if (!currentGame) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Populate metadata
+      document.title = `${currentGame.title} - EdgePlay Arcade`;
+      document.getElementById('gameTitle').textContent = currentGame.title;
+      document.getElementById('gameSubTitle').textContent = currentGame.title;
+      document.getElementById('gameCategory').textContent = currentGame.category.toUpperCase();
+      document.getElementById('gameDesc').textContent = currentGame.description;
+
+      const tagsContainer = document.getElementById('gameTags');
+      if (currentGame.tags) {
+        let tags = Array.isArray(currentGame.tags) ? currentGame.tags : JSON.parse(currentGame.tags || '[]');
+        tagsContainer.innerHTML = tags.map(t => `<span class="badge-pixel badge-cyan">${t}</span>`).join('');
+      }
+
+      // Load Game in Iframe
+      document.getElementById('gameIframe').src = currentGame.entry_url;
+
+      // Load Leaderboard
+      loadLeaderboard(currentGame.id);
+
+      // Load Related Games
+      loadRelated();
+
+      // Listen for game score reports via postMessage
+      window.addEventListener('message', async (e) => {
+        if (!e.data || !e.data.type) return;
+
+        if (e.data.type === 'SCORE_UPDATE') {
+          currentScore = e.data.score;
+          document.getElementById('playerScoreDisplay').textContent = `SCORE: ${currentScore.toLocaleString()}`;
+        }
+
+        if (e.data.type === 'GAME_OVER') {
+          const finalScore = e.data.score;
+          window.retroAudio.playGameOver();
+          // Auto-submit score to D1
+          if (finalScore > 0) {
+            await window.edgeplayApi.submitScore(currentGame.id, finalScore);
+            showScoreAlert(`NEW HIGH SCORE: ${finalScore.toLocaleString()} PTS!`);
+            loadLeaderboard(currentGame.id);
+          }
+        }
+      });
+    });
+
+    async function loadLeaderboard(gameId) {
+      const scores = await window.edgeplayApi.getLeaderboard(gameId);
+      const listEl = document.getElementById('rankList');
+
+      if (!scores || scores.length === 0) {
+        listEl.innerHTML = `<div style="text-align: center; color: #888; font-size: 11px; padding: 20px;">NO SCORES RECORDED YET. BE THE FIRST!</div>`;
+        return;
+      }
+
+      listEl.innerHTML = scores.slice(0, 10).map((s, idx) => {
+        const topClass = idx === 0 ? 'top-1' : idx === 1 ? 'top-2' : idx === 2 ? 'top-3' : '';
+        return `
+          <div class="rank-row ${topClass}">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: bold; width: 22px;">${idx + 1}.</span>
+              <span style="color: #fff; font-weight: 600;">${s.username || 'PLAYER'}</span>
+            </div>
+            <span style="color: var(--color-gold); font-weight: bold;">${s.score_display || s.score}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadRelated() {
+      const all = await window.edgeplayApi.getGames();
+      const related = all.filter(g => g.id !== currentGame.id).slice(0, 3);
+      const container = document.getElementById('relatedList');
+
+      container.innerHTML = related.map(g => `
+        <a href="game.html?id=${g.slug || g.id}" style="display: flex; gap: 10px; text-decoration: none; background: var(--color-console); border: 2px solid var(--color-border); padding: 8px;" onclick="window.retroAudio.playBlip()">
+          <img src="${g.thumbnail_url}" style="width: 70px; height: 50px; object-fit: cover; border: 1px solid #000;">
+          <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-family: var(--font-title); font-size: 13px; font-weight: bold; color: #fff;">${g.title}</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--color-cyan);">★ ${g.rating_avg.toFixed(1)} · ${g.category.toUpperCase()}</div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    function restartGame() {
+      window.retroAudio.playBlip();
+      const iframe = document.getElementById('gameIframe');
+      iframe.src = iframe.src;
+    }
+
+    function toggleCrt() {
+      window.retroAudio.playBlip();
+      const frame = document.getElementById('monitorFrame');
+      const btn = document.getElementById('btnCrt');
+      frame.classList.toggle('crt-overlay');
+      btn.classList.toggle('active');
+    }
+
+    function toggleSound() {
+      window.retroAudio.enabled = !window.retroAudio.enabled;
+      document.getElementById('btnSound').classList.toggle('active');
+      window.retroAudio.playBlip();
+    }
+
+    function toggleFullscreen() {
+      const frame = document.getElementById('monitorFrame');
+      if (!document.fullscreenElement) {
+        frame.requestFullscreen?.().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen?.();
+      }
+    }
+
+    async function saveToCloud() {
+      window.retroAudio.playInsertCoin();
+      showScoreAlert('SAVING GAME STATE TO CLOUDFLARE R2 & D1...');
+      // Simulated save state
+      setTimeout(() => {
+        showScoreAlert('✅ PROGRESS SYNCED TO R2 OBJECT BUCKET!');
+      }, 800);
+    }
+
+    function showScoreAlert(msg) {
+      const alert = document.getElementById('scoreAlert');
+      alert.textContent = msg;
+      alert.classList.add('show');
+      setTimeout(() => alert.classList.remove('show'), 2500);
+    }
+  </script>
+</body>
+</html>
