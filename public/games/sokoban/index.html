@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Cyber Sokoban</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0a0a14;
+      color: #00ff66;
+      font-family: 'Space Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .game-box {
+      background: #12121d;
+      border: 3px solid #2e2e48;
+      box-shadow: 4px 4px 0px #000;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+    }
+    .hud-level { color: #ffcc00; }
+    .hud-steps { color: #00e5ff; }
+    canvas {
+      background: #04040a;
+      border: 2px solid #2e2e48;
+      display: block;
+      box-shadow: inset 0 0 16px rgba(0, 255, 102, 0.15);
+    }
+    .btn-row {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+    }
+    .sbtn {
+      background: #1a1a2e;
+      border: 2px solid #444466;
+      color: #ffcc00;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .sbtn:active { background: #ffcc00; color: #000; }
+    .touch-dpad {
+      display: none;
+      grid-template-columns: repeat(3, 44px);
+      grid-gap: 6px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) {
+      .touch-dpad { display: grid; }
+    }
+    .dpad-btn {
+      width: 44px;
+      height: 44px;
+      background: #1a1a2e;
+      border: 2px solid #444466;
+      color: #00ff66;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .dpad-btn:active { background: #00ff66; color: #000; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 20, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+    .overlay h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      color: #00ff66;
+      margin-bottom: 12px;
+      text-align: center;
+      text-shadow: 0 0 8px #00ff66;
+    }
+    .btn {
+      background: #00ff66;
+      color: #000;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      padding: 10px 20px;
+      border: none;
+      box-shadow: 3px 3px 0px #000;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover { background: #66ffaa; }
+  </style>
+</head>
+<body>
+  <div class="game-box">
+    <div class="hud">
+      <div class="hud-level">LVL: <span id="lvlVal">1/5</span></div>
+      <div class="hud-steps">MOVES: <span id="stepsVal">0</span></div>
+    </div>
+    <canvas id="sokoCanvas" width="360" height="360"></canvas>
+    <div class="btn-row">
+      <button class="sbtn" id="undoBtn">↩ UNDO</button>
+      <button class="sbtn" id="restartBtn">🔄 RESTART</button>
+    </div>
+    <div class="touch-dpad">
+      <div></div>
+      <button class="dpad-btn" id="dpadUp">▲</button>
+      <div></div>
+      <button class="dpad-btn" id="dpadLeft">◀</button>
+      <button class="dpad-btn" id="dpadDown">▼</button>
+      <button class="dpad-btn" id="dpadRight">▶</button>
+    </div>
+
+    <div class="overlay" id="startOverlay">
+      <h2>CYBER SOKOBAN</h2>
+      <p style="color:#ffcc00; font-size:10px; margin-bottom:12px;">PUSH ENERGY CUBES TO NEON TARGETS</p>
+      <button class="btn" id="startBtn">INITIALIZE</button>
+    </div>
+
+    <div class="overlay" id="winOverlay" style="display:none;">
+      <h2 style="color:#ffcc00; text-shadow:0 0 8px #ffcc00;">ALL LEVELS CLEARED!</h2>
+      <p style="font-size:11px; color:#fff; margin-bottom:8px;">TOTAL MOVES: <span id="totalMoves">0</span></p>
+      <button class="btn" id="againBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synthesizer
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function getAudio() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function playTone(f, dur, type = 'sine') {
+      try {
+        const ctx = getAudio();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(f, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+    function playStep() { playTone(220, 0.04, 'triangle'); }
+    function playPush() { playTone(180, 0.08, 'sawtooth'); }
+    function playLevelClear() {
+      try {
+        const ctx = getAudio();
+        [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'square'), i * 100));
+      } catch (e) {}
+    }
+
+    const canvas = document.getElementById('sokoCanvas');
+    const ctx = canvas.getContext('2d');
+    const TILE = 40;
+    const COLS = 9;
+    const ROWS = 9;
+
+    // Level Legend:
+    // '#' = Wall, '.' = Target, '$' = Box, '*' = Box on target, '@' = Player, '+' = Player on target, ' ' = Empty
+    const LEVELS = [
+      [
+        "  #####  ",
+        "###   #  ",
+        "# @$  #  ",
+        "### $.#  ",
+        "#.##$ #  ",
+        "# # . ## ",
+        "#$ *$$.# ",
+        "#   .  # ",
+        "######## "
+      ],
+      [
+        "######   ",
+        "#    #   ",
+        "# #$ ### ",
+        "# #  . # ",
+        "#. $#  # ",
+        "# .@$  # ",
+        "#  ### # ",
+        "####   # ",
+        "       # "
+      ],
+      [
+        "  #####  ",
+        "  #   #  ",
+        "  #$  #  ",
+        "###  $## ",
+        "#  $ $ # ",
+        "### #.## ",
+        "  # . .# ",
+        "  #@...# ",
+        "  ###### "
+      ],
+      [
+        " ####    ",
+        " #  #### ",
+        " # $   # ",
+        "## #$$ # ",
+        "#..# @ # ",
+        "#..# $ # ",
+        "#.     # ",
+        "######## "
+      ],
+      [
+        "  #####  ",
+        "  #   #  ",
+        "### $ ###",
+        "#  $@$  #",
+        "# .. .. #",
+        "#  $ $  #",
+        "### $ ###",
+        "  #   #  ",
+        "  #####  "
+      ]
+    ];
+
+    let currentLvl = 0;
+    let moves = 0;
+    let totalMovesCount = 0;
+    let history = [];
+    let map = [];
+    let player = { r: 0, c: 0 };
+
+    function loadLevel(lvlIdx) {
+      currentLvl = lvlIdx;
+      moves = 0;
+      history = [];
+      document.getElementById('lvlVal').textContent = `${currentLvl + 1}/${LEVELS.length}`;
+      document.getElementById('stepsVal').textContent = moves;
+
+      const raw = LEVELS[currentLvl];
+      map = [];
+      for (let r = 0; r < ROWS; r++) {
+        map[r] = [];
+        const rowStr = raw[r] || "";
+        for (let c = 0; c < COLS; c++) {
+          const char = rowStr[c] || ' ';
+          map[r][c] = char;
+          if (char === '@' || char === '+') {
+            player = { r, c };
+          }
+        }
+      }
+      draw();
+    }
+
+    function move(dr, dc) {
+      const nr = player.r + dr;
+      const nc = player.c + dc;
+      if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return;
+
+      const targetCell = map[nr][nc];
+      if (targetCell === '#') return; // Wall
+
+      let pushed = false;
+      if (targetCell === '$' || targetCell === '*') {
+        // Box push attempt
+        const bnr = nr + dr;
+        const bnc = nc + dc;
+        if (bnr < 0 || bnr >= ROWS || bnc < 0 || bnc >= COLS) return;
+        const beyondBox = map[bnr][bnc];
+        if (beyondBox === '#' || beyondBox === '$' || beyondBox === '*') return;
+
+        // Save state for undo
+        saveHistory();
+
+        // Move Box
+        map[bnr][bnc] = (beyondBox === '.' ? '*' : '$');
+        map[nr][nc] = (targetCell === '*' ? '.' : ' ');
+        pushed = true;
+      } else {
+        saveHistory();
+      }
+
+      // Move Player
+      const currentCell = map[player.r][player.c];
+      map[player.r][player.c] = (currentCell === '+' ? '.' : ' ');
+      map[nr][nc] = (map[nr][nc] === '.' ? '+' : '@');
+      player.r = nr;
+      player.c = nc;
+
+      moves++;
+      totalMovesCount++;
+      document.getElementById('stepsVal').textContent = moves;
+      if (pushed) playPush(); else playStep();
+
+      draw();
+      checkWin();
+    }
+
+    function saveHistory() {
+      history.push({
+        map: map.map(row => [...row]),
+        player: { ...player },
+        moves
+      });
+      if (history.length > 50) history.shift();
+    }
+
+    function undo() {
+      if (history.length === 0) return;
+      const prev = history.pop();
+      map = prev.map;
+      player = prev.player;
+      moves = prev.moves;
+      document.getElementById('stepsVal').textContent = moves;
+      playStep();
+      draw();
+    }
+
+    function checkWin() {
+      // If there are no '$' left (only '*' meaning all boxes are on targets)
+      let boxesOffTarget = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (map[r][c] === '$') boxesOffTarget++;
+        }
+      }
+
+      if (boxesOffTarget === 0) {
+        playLevelClear();
+        setTimeout(() => {
+          if (currentLvl + 1 < LEVELS.length) {
+            loadLevel(currentLvl + 1);
+          } else {
+            // Completed all levels!
+            document.getElementById('totalMoves').textContent = totalMovesCount;
+            document.getElementById('winOverlay').style.display = 'flex';
+            try {
+              window.parent.postMessage({
+                type: 'EDGEPLAY_GAME_OVER',
+                gameId: 'cyber-sokoban',
+                score: Math.max(100, 3000 - totalMovesCount * 10)
+              }, '*');
+            } catch (e) {}
+          }
+        }, 300);
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const char = map[r][c];
+          const x = c * TILE;
+          const y = r * TILE;
+
+          if (char === '#') {
+            // Wall block
+            ctx.fillStyle = '#1c1c30';
+            ctx.fillRect(x, y, TILE, TILE);
+            ctx.strokeStyle = '#38385e';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + 2, y + 2, TILE - 4, TILE - 4);
+          } else if (char === '.' || char === '+' || char === '*') {
+            // Neon target plate
+            ctx.fillStyle = '#12121e';
+            ctx.fillRect(x, y, TILE, TILE);
+            ctx.fillStyle = '#00ff66';
+            ctx.shadowColor = '#00ff66';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(x + TILE / 2, y + TILE / 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          } else if (char !== ' ') {
+            ctx.fillStyle = '#0e0e1a';
+            ctx.fillRect(x, y, TILE, TILE);
+          }
+
+          if (char === '$' || char === '*') {
+            // Energy Cube Crate
+            const color = char === '*' ? '#00ff66' : '#ff9900';
+            ctx.fillStyle = '#1f1608';
+            ctx.fillRect(x + 4, y + 4, TILE - 8, TILE - 8);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = char === '*' ? 10 : 4;
+            ctx.strokeRect(x + 4, y + 4, TILE - 8, TILE - 8);
+            // Energy bolt icon
+            ctx.fillStyle = color;
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⚡', x + TILE / 2, y + TILE / 2);
+            ctx.shadowBlur = 0;
+          }
+
+          if (char === '@' || char === '+') {
+            // Robot Worker Player
+            ctx.fillStyle = '#00e5ff';
+            ctx.shadowColor = '#00e5ff';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(x + TILE / 2, y + TILE / 2, TILE / 2 - 6, 0, Math.PI * 2);
+            ctx.fill();
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + TILE / 2 - 6, y + TILE / 2 - 3, 3, 3);
+            ctx.fillRect(x + TILE / 2 + 3, y + TILE / 2 - 3, 3, 3);
+            ctx.shadowBlur = 0;
+          }
+        }
+      }
+    }
+
+    // Input Listeners
+    window.addEventListener('keydown', e => {
+      getAudio();
+      if (['ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); move(-1, 0); }
+      if (['ArrowDown', 'KeyS'].includes(e.code)) { e.preventDefault(); move(1, 0); }
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) { e.preventDefault(); move(0, -1); }
+      if (['ArrowRight', 'KeyD'].includes(e.code)) { e.preventDefault(); move(0, 1); }
+      if (['KeyZ', 'Backspace'].includes(e.code)) { e.preventDefault(); undo(); }
+      if (['KeyR'].includes(e.code)) { e.preventDefault(); loadLevel(currentLvl); }
+    });
+
+    document.getElementById('dpadUp').onclick = () => move(-1, 0);
+    document.getElementById('dpadDown').onclick = () => move(1, 0);
+    document.getElementById('dpadLeft').onclick = () => move(0, -1);
+    document.getElementById('dpadRight').onclick = () => move(0, 1);
+    document.getElementById('undoBtn').onclick = () => undo();
+    document.getElementById('restartBtn').onclick = () => loadLevel(currentLvl);
+
+    document.getElementById('startBtn').onclick = () => {
+      getAudio();
+      document.getElementById('startOverlay').style.display = 'none';
+      loadLevel(0);
+    };
+    document.getElementById('againBtn').onclick = () => {
+      getAudio();
+      document.getElementById('winOverlay').style.display = 'none';
+      totalMovesCount = 0;
+      loadLevel(0);
+    };
+
+    loadLevel(0);
+  </script>
+</body>
+</html>
