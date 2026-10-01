@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>2048 Retro Arcade Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0a0a14;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .game-container {
+      width: 360px;
+      max-width: 95vw;
+      background: #161626;
+      border: 3px solid #2e2e48;
+      box-shadow: 4px 4px 0px #000;
+      padding: 16px;
+      border-radius: 4px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 18px;
+      color: #ffcc00;
+      text-shadow: 2px 2px 0px #000;
+    }
+    .scores {
+      display: flex;
+      gap: 8px;
+    }
+    .score-box {
+      background: #0a0a14;
+      border: 2px solid #2e2e48;
+      padding: 4px 8px;
+      text-align: center;
+      min-width: 65px;
+    }
+    .score-label {
+      font-size: 9px;
+      color: #8888aa;
+      text-transform: uppercase;
+    }
+    .score-value {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #00e5ff;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 8px;
+      background: #0d0d18;
+      padding: 8px;
+      border: 2px solid #2e2e48;
+      border-radius: 4px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      position: relative;
+    }
+    .tile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      background: #1a1a2e;
+      color: #fff;
+      border: 2px solid #252538;
+      border-radius: 2px;
+      transition: all 0.1s ease;
+    }
+    .tile-2 { background: #2a2a44; color: #fff; border-color: #3b3b5c; }
+    .tile-4 { background: #3b3b5c; color: #ffcc00; border-color: #555580; }
+    .tile-8 { background: #ff8800; color: #000; border-color: #cc6600; font-size: 13px; }
+    .tile-16 { background: #ff5500; color: #fff; border-color: #cc4400; font-size: 13px; }
+    .tile-32 { background: #ff0055; color: #fff; border-color: #cc0044; font-size: 13px; }
+    .tile-64 { background: #00e5ff; color: #000; border-color: #00b3cc; font-size: 13px; }
+    .tile-128 { background: #00ff66; color: #000; border-color: #00cc52; font-size: 11px; }
+    .tile-256 { background: #9d4edd; color: #fff; border-color: #7b2cbf; font-size: 11px; }
+    .tile-512 { background: #ffcc00; color: #000; border-color: #d4a017; font-size: 11px; }
+    .tile-1024 { background: #ff007f; color: #fff; border-color: #d6006c; font-size: 9px; }
+    .tile-2048 { background: #00ffcc; color: #000; border-color: #00cca3; font-size: 9px; box-shadow: 0 0 10px #00ffcc; }
+
+    .controls-hint {
+      margin-top: 10px;
+      font-size: 10px;
+      color: #777799;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-reset {
+      background: #ffcc00;
+      color: #000;
+      border: 2px solid #000;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      font-size: 10px;
+      padding: 4px 8px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px #000;
+    }
+    .btn-reset:hover { background: #ffe066; }
+
+    .game-over-overlay {
+      position: absolute;
+      inset: 8px;
+      background: rgba(10, 10, 20, 0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ff0055;
+      z-index: 20;
+    }
+    .game-over-text {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      color: #ff0055;
+      margin-bottom: 12px;
+      text-shadow: 2px 2px 0px #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <div class="title">2048</div>
+      <div class="scores">
+        <div class="score-box">
+          <div class="score-label">Score</div>
+          <div id="score" class="score-value">0</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">Best</div>
+          <div id="best-score" class="score-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid">
+      <div class="game-over-overlay" id="gameOverOverlay">
+        <div class="game-over-text">GAME OVER</div>
+        <button class="btn-reset" onclick="initGame()">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <div class="controls-hint">
+      <span>USE [ARROW KEYS] / SWIPE</span>
+      <button class="btn-reset" onclick="initGame()">RESET</button>
+    </div>
+  </div>
+
+  <script>
+    let board = [];
+    let score = 0;
+    let bestScore = parseInt(localStorage.getItem('2048_best') || '0', 10);
+    document.getElementById('best-score').textContent = bestScore;
+
+    function initGame() {
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ];
+      score = 0;
+      updateScore(0);
+      document.getElementById('gameOverOverlay').style.display = 'none';
+      addRandomTile();
+      addRandomTile();
+      render();
+    }
+
+    function addRandomTile() {
+      let empty = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (board[r][c] === 0) empty.push({ r, c });
+        }
+      }
+      if (empty.length > 0) {
+        let rand = empty[Math.floor(Math.random() * empty.length)];
+        board[rand.r][rand.c] = Math.random() < 0.9 ? 2 : 4;
+      }
+    }
+
+    function render() {
+      const gridEl = document.getElementById('grid');
+      // keep game over overlay
+      const overlay = document.getElementById('gameOverOverlay');
+      gridEl.innerHTML = '';
+      gridEl.appendChild(overlay);
+
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const val = board[r][c];
+          const tileEl = document.createElement('div');
+          tileEl.className = 'tile' + (val > 0 ? ` tile-${val}` : '');
+          tileEl.textContent = val > 0 ? val : '';
+          gridEl.appendChild(tileEl);
+        }
+      }
+    }
+
+    function updateScore(delta) {
+      score += delta;
+      document.getElementById('score').textContent = score;
+      if (score > bestScore) {
+        bestScore = score;
+        document.getElementById('best-score').textContent = bestScore;
+        localStorage.setItem('2048_best', bestScore);
+      }
+      // Report to parent EdgePlay Cinema frame
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'SCORE_UPDATE', game_id: 'game-2048', score: score }, '*');
+      }
+    }
+
+    function slide(row) {
+      let arr = row.filter(val => val);
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          arr[i] *= 2;
+          updateScore(arr[i]);
+          arr[i + 1] = 0;
+        }
+      }
+      arr = arr.filter(val => val);
+      while (arr.length < 4) arr.push(0);
+      return arr;
+    }
+
+    function moveLeft() {
+      let changed = false;
+      for (let r = 0; r < 4; r++) {
+        let oldRow = [...board[r]];
+        board[r] = slide(board[r]);
+        if (oldRow.join(',') !== board[r].join(',')) changed = true;
+      }
+      return changed;
+    }
+
+    function moveRight() {
+      let changed = false;
+      for (let r = 0; r < 4; r++) {
+        let oldRow = [...board[r]];
+        let rev = [...board[r]].reverse();
+        rev = slide(rev);
+        board[r] = rev.reverse();
+        if (oldRow.join(',') !== board[r].join(',')) changed = true;
+      }
+      return changed;
+    }
+
+    function moveUp() {
+      let changed = false;
+      for (let c = 0; c < 4; c++) {
+        let col = [board[0][c], board[1][c], board[2][c], board[3][c]];
+        let oldCol = [...col];
+        let newCol = slide(col);
+        for (let r = 0; r < 4; r++) board[r][c] = newCol[r];
+        if (oldCol.join(',') !== newCol.join(',')) changed = true;
+      }
+      return changed;
+    }
+
+    function moveDown() {
+      let changed = false;
+      for (let c = 0; c < 4; c++) {
+        let col = [board[0][c], board[1][c], board[2][c], board[3][c]];
+        let oldCol = [...col];
+        let newCol = slide(col.reverse()).reverse();
+        for (let r = 0; r < 4; r++) board[r][c] = newCol[r];
+        if (oldCol.join(',') !== newCol.join(',')) changed = true;
+      }
+      return changed;
+    }
+
+    function checkGameOver() {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (board[r][c] === 0) return false;
+          if (r < 3 && board[r][c] === board[r + 1][c]) return false;
+          if (c < 3 && board[r][c] === board[r][c + 1]) return false;
+        }
+      }
+      return true;
+    }
+
+    function handleMove(direction) {
+      let changed = false;
+      if (direction === 'left') changed = moveLeft();
+      if (direction === 'right') changed = moveRight();
+      if (direction === 'up') changed = moveUp();
+      if (direction === 'down') changed = moveDown();
+
+      if (changed) {
+        addRandomTile();
+        render();
+        if (checkGameOver()) {
+          document.getElementById('gameOverOverlay').style.display = 'flex';
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'GAME_OVER', game_id: 'game-2048', score: score }, '*');
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); handleMove('up'); }
+      if (['ArrowDown', 'KeyS'].includes(e.code)) { e.preventDefault(); handleMove('down'); }
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) { e.preventDefault(); handleMove('left'); }
+      if (['ArrowRight', 'KeyD'].includes(e.code)) { e.preventDefault(); handleMove('right'); }
+    });
+
+    // Touch Swipe
+    let touchStartX = 0, touchStartY = 0;
+    window.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, false);
+    window.addEventListener('touchend', e => {
+      let diffX = e.changedTouches[0].screenX - touchStartX;
+      let diffY = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 30) handleMove('right');
+        else if (diffX < -30) handleMove('left');
+      } else {
+        if (diffY > 30) handleMove('down');
+        else if (diffY < -30) handleMove('up');
+      }
+    }, false);
+
+    initGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pixel Flap Bird</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0a0a14;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .game-wrapper {
+      position: relative;
+      background: #12121d;
+      border: 3px solid #2e2e48;
+      box-shadow: 4px 4px 0px #000;
+      padding: 12px;
+    }
+    canvas {
+      background: #0c1020;
+      border: 2px solid #2e2e48;
+      display: block;
+    }
+    .hud {
+      position: absolute;
+      top: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 18px;
+      color: #ffcc00;
+      text-shadow: 2px 2px 0px #000;
+      pointer-events: none;
+    }
+    .overlay {
+      position: absolute;
+      inset: 12px;
+      background: rgba(10, 10, 20, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ff0055;
+      z-index: 10;
+    }
+    .overlay h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      color: #ff0055;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px #ff0055;
+    }
+    .btn-action {
+      background: #ffcc00;
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      border: 2px solid #000;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px #000;
+    }
+    .btn-action:hover { background: #ffe066; }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <canvas id="c" width="320" height="420"></canvas>
+    <div class="hud" id="hud">0</div>
+
+    <div class="overlay" id="overlay">
+      <h2 id="overlayTitle">PIXEL FLAP BIRD</h2>
+      <p id="overlaySub" style="font-size: 11px; color: #aaa; margin-bottom: 14px;">PRESS SPACE OR TAP TO FLAP</p>
+      <button class="btn-action" onclick="startGame()">START GAME</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    let bird = { x: 50, y: 150, vy: 0, radius: 10 };
+    let pipes = [];
+    let score = 0;
+    let hiScore = parseInt(localStorage.getItem('flappy_hi') || '0', 10);
+    let isRunning = false;
+    let frame = 0;
+
+    const GRAVITY = 0.38;
+    const JUMP = -6.2;
+    const PIPE_SPEED = 2;
+    const PIPE_SPAWN = 95;
+    const GAP = 95;
+
+    function startGame() {
+      bird = { x: 50, y: 150, vy: 0, radius: 10 };
+      pipes = [];
+      score = 0;
+      frame = 0;
+      isRunning = true;
+      document.getElementById('hud').textContent = '0';
+      document.getElementById('overlay').style.display = 'none';
+      loop();
+    }
+
+    function flap() {
+      if (!isRunning) {
+        startGame();
+        return;
+      }
+      bird.vy = JUMP;
+    }
+
+    function loop() {
+      if (!isRunning) return;
+
+      frame++;
+      bird.vy += GRAVITY;
+      bird.y += bird.vy;
+
+      // Spawn pipes
+      if (frame % PIPE_SPAWN === 0) {
+        const topHeight = Math.floor(Math.random() * (canvas.height - GAP - 80)) + 30;
+        pipes.push({
+          x: canvas.width,
+          top: topHeight,
+          bottom: canvas.height - topHeight - GAP,
+          passed: false
+        });
+      }
+
+      // Update pipes
+      for (let i = pipes.length - 1; i >= 0; i--) {
+        const p = pipes[i];
+        p.x -= PIPE_SPEED;
+
+        // Score update
+        if (!p.passed && p.x + 35 < bird.x) {
+          p.passed = true;
+          score++;
+          document.getElementById('hud').textContent = score;
+          if (score > hiScore) {
+            hiScore = score;
+            localStorage.setItem('flappy_hi', hiScore);
+          }
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'SCORE_UPDATE', game_id: 'flappy-bird', score: score }, '*');
+          }
+        }
+
+        // Collision Check
+        if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + 35) {
+          if (bird.y - bird.radius < p.top || bird.y + bird.radius > canvas.height - p.bottom) {
+            gameOver();
+            return;
+          }
+        }
+
+        // Remove out-of-screen pipes
+        if (p.x < -40) pipes.splice(i, 1);
+      }
+
+      // Ground / Ceiling collision
+      if (bird.y + bird.radius > canvas.height - 15 || bird.y - bird.radius < 0) {
+        gameOver();
+        return;
+      }
+
+      // Draw
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function draw() {
+      // Sky background
+      ctx.fillStyle = '#0a1024';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Stars
+      ctx.fillStyle = '#445588';
+      for (let i = 0; i < 20; i++) {
+        const sx = (i * 37 + frame * 0.2) % canvas.width;
+        const sy = (i * 53) % (canvas.height - 50);
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+
+      // Pipes
+      pipes.forEach(p => {
+        // Top Pipe
+        ctx.fillStyle = '#00ff66';
+        ctx.fillRect(p.x, 0, 35, p.top);
+        ctx.strokeStyle = '#00aa44';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, 0, 35, p.top);
+
+        // Bottom Pipe
+        ctx.fillStyle = '#00ff66';
+        ctx.fillRect(p.x, canvas.height - p.bottom, 35, p.bottom);
+        ctx.strokeRect(p.x, canvas.height - p.bottom, 35, p.bottom);
+      });
+
+      // Ground
+      ctx.fillStyle = '#161626';
+      ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
+      ctx.strokeStyle = '#2e2e48';
+      ctx.strokeRect(0, canvas.height - 15, canvas.width, 15);
+
+      // Bird (Pixel Retro Sprite)
+      ctx.fillStyle = '#ffcc00';
+      ctx.fillRect(bird.x - 10, bird.y - 10, 20, 20);
+      ctx.fillStyle = '#ff0055';
+      ctx.fillRect(bird.x + 6, bird.y - 4, 8, 8); // Beak
+      ctx.fillStyle = '#000';
+      ctx.fillRect(bird.x + 2, bird.y - 8, 4, 4); // Eye
+    }
+
+    function gameOver() {
+      isRunning = false;
+      document.getElementById('overlayTitle').textContent = 'GAME OVER';
+      document.getElementById('overlaySub').innerHTML = `SCORE: <b style="color:#ffcc00">${score}</b> | BEST: <b style="color:#00ff66">${hiScore}</b>`;
+      document.getElementById('overlay').style.display = 'flex';
+
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'GAME_OVER', game_id: 'flappy-bird', score: score }, '*');
+      }
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        flap();
+      }
+    });
+    window.addEventListener('pointerdown', e => {
+      if (e.target.tagName !== 'BUTTON') {
+        flap();
+      }
+    });
+  </script>
+</body>
+</html>
