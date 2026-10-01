@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Hextris Hexagonal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #080812;
+      color: #00e5ff;
+      font-family: 'Space Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .game-box {
+      background: #10101c;
+      border: 3px solid #2e2e48;
+      box-shadow: 4px 4px 0px #000;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+    }
+    .hud-score { color: #ffcc00; text-shadow: 0 0 6px #ffcc00; }
+    .hud-combo { color: #ff0055; text-shadow: 0 0 6px #ff0055; }
+    canvas {
+      background: #030308;
+      border: 2px solid #2e2e48;
+      display: block;
+      box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.2);
+    }
+    .controls-hint {
+      margin-top: 8px;
+      font-size: 9px;
+      color: #8888aa;
+      text-transform: uppercase;
+      display: flex;
+      gap: 16px;
+    }
+    .touch-rot {
+      display: none;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) {
+      .touch-rot { display: flex; }
+    }
+    .rot-btn {
+      flex: 1;
+      background: #1a1a2e;
+      border: 2px solid #444466;
+      color: #00e5ff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .rot-btn:active { background: #00e5ff; color: #000; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 20, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+    .overlay h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      color: #ff0055;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px #ff0055;
+      text-align: center;
+    }
+    .btn {
+      background: #ff0055;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      padding: 10px 20px;
+      border: none;
+      box-shadow: 3px 3px 0px #000;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover { background: #ff3377; }
+  </style>
+</head>
+<body>
+  <div class="game-box">
+    <div class="hud">
+      <div class="hud-score">SCORE: <span id="scoreVal">0</span></div>
+      <div class="hud-combo">COMBO: <span id="comboVal">x1</span></div>
+    </div>
+    <canvas id="hexCanvas" width="380" height="380"></canvas>
+    <div class="controls-hint">
+      <span>🕹️ ◀ / ▶ OR A / D TO ROTATE HEXAGON</span>
+    </div>
+    <div class="touch-rot">
+      <button class="rot-btn" id="rotLeft">◀ ROTATE</button>
+      <button class="rot-btn" id="rotRight">ROTATE ▶</button>
+    </div>
+
+    <div class="overlay" id="startOverlay">
+      <h2>HEXTRIS HEXAGONAL</h2>
+      <p style="color:#00e5ff; font-size:10px; margin-bottom:12px;">MATCH 3+ COLORS TO CLEAR EDGES</p>
+      <button class="btn" id="startBtn">START PLAY</button>
+    </div>
+
+    <div class="overlay" id="gameOverOverlay" style="display:none;">
+      <h2>HEX OVERFLOW</h2>
+      <p style="font-size:12px; color:#fff; margin-bottom:8px;">FINAL SCORE: <span id="finalScore">0</span></p>
+      <button class="btn" id="restartBtn">TRY AGAIN</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synthesizer
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function getAudio() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function playTone(f, dur, type = 'sine') {
+      try {
+        const ctx = getAudio();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(f, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+    function playRotate() { playTone(300, 0.04, 'triangle'); }
+    function playAttach() { playTone(450, 0.06, 'square'); }
+    function playClear() {
+      try {
+        const ctx = getAudio();
+        [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.1, 'sawtooth'), i * 80));
+      } catch (e) {}
+    }
+
+    const canvas = document.getElementById('hexCanvas');
+    const ctx = canvas.getContext('2d');
+    const CENTER = { x: canvas.width / 2, y: canvas.height / 2 };
+    const HEX_RADIUS = 40;
+    const BLOCK_THICKNESS = 12;
+    const MAX_STACK = 7;
+
+    const COLORS = ['#ff0055', '#00e5ff', '#ffcc00', '#00ff66'];
+
+    let isPlaying = false;
+    let isGameOver = false;
+    let score = 0;
+    let combo = 1;
+    let rotation = 0; // current angle in radians
+    let targetRotation = 0;
+
+    // 6 sides, each side has an array of colors: [color1, color2, ...]
+    let sides = [[], [], [], [], [], []];
+    let fallingBlocks = [];
+    let spawnTimer = 0;
+    let spawnInterval = 75;
+
+    function resetGame() {
+      sides = [[], [], [], [], [], []];
+      fallingBlocks = [];
+      score = 0;
+      combo = 1;
+      rotation = 0;
+      targetRotation = 0;
+      spawnTimer = 0;
+      spawnInterval = 75;
+      document.getElementById('scoreVal').textContent = '0';
+      document.getElementById('comboVal').textContent = 'x1';
+    }
+
+    function spawnBlock() {
+      const side = Math.floor(Math.random() * 6);
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      fallingBlocks.push({
+        side: side,
+        color: color,
+        dist: 175,
+        speed: 1.6 + Math.min(2.0, score * 0.001)
+      });
+    }
+
+    function rotateHex(dir) {
+      if (!isPlaying || isGameOver) return;
+      targetRotation += dir * (Math.PI / 3);
+      playRotate();
+    }
+
+    function update() {
+      if (!isPlaying || isGameOver) return;
+
+      // Smooth rotation lerp
+      rotation += (targetRotation - rotation) * 0.25;
+
+      // Spawn falling blocks
+      spawnTimer++;
+      if (spawnTimer >= spawnInterval) {
+        spawnBlock();
+        spawnTimer = 0;
+        if (spawnInterval > 35 && Math.random() < 0.2) spawnInterval -= 1;
+      }
+
+      // Update falling blocks
+      for (let i = fallingBlocks.length - 1; i >= 0; i--) {
+        const b = fallingBlocks[i];
+        b.dist -= b.speed;
+
+        // Calculate landing distance on that side
+        const stackLen = sides[b.side].length;
+        const landDist = HEX_RADIUS + stackLen * BLOCK_THICKNESS;
+
+        if (b.dist <= landDist) {
+          // Lands on side
+          sides[b.side].push(b.color);
+          fallingBlocks.splice(i, 1);
+          playAttach();
+
+          // Check stack overflow
+          if (sides[b.side].length > MAX_STACK) {
+            triggerGameOver();
+            return;
+          }
+
+          // Check match 3
+          checkMatches();
+        }
+      }
+    }
+
+    function checkMatches() {
+      let matched = false;
+      // Check 3 consecutive blocks of same color on any side
+      for (let s = 0; s < 6; s++) {
+        const stack = sides[s];
+        if (stack.length >= 3) {
+          const topColor = stack[stack.length - 1];
+          if (stack[stack.length - 2] === topColor && stack[stack.length - 3] === topColor) {
+            stack.splice(stack.length - 3, 3);
+            score += 150 * combo;
+            combo++;
+            matched = true;
+          }
+        }
+      }
+
+      // Check horizontal layer match across adjacent sides
+      for (let layer = 0; layer < MAX_STACK; layer++) {
+        for (let s = 0; s < 6; s++) {
+          const s1 = s;
+          const s2 = (s + 1) % 6;
+          const s3 = (s + 2) % 6;
+          if (sides[s1][layer] && sides[s2][layer] && sides[s3][layer]) {
+            if (sides[s1][layer] === sides[s2][layer] && sides[s2][layer] === sides[s3][layer]) {
+              sides[s1].splice(layer, 1);
+              sides[s2].splice(layer, 1);
+              sides[s3].splice(layer, 1);
+              score += 300 * combo;
+              combo++;
+              matched = true;
+            }
+          }
+        }
+      }
+
+      if (matched) {
+        playClear();
+        document.getElementById('scoreVal').textContent = score;
+        document.getElementById('comboVal').textContent = `x${combo}`;
+      } else {
+        combo = Math.max(1, combo - 0.05);
+      }
+    }
+
+    function triggerGameOver() {
+      isGameOver = true;
+      isPlaying = false;
+      document.getElementById('finalScore').textContent = score;
+      document.getElementById('gameOverOverlay').style.display = 'flex';
+
+      try {
+        window.parent.postMessage({
+          type: 'EDGEPLAY_GAME_OVER',
+          gameId: 'hextris',
+          score: score
+        }, '*');
+      } catch (e) {}
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(CENTER.x, CENTER.y);
+      ctx.rotate(rotation);
+
+      // Draw Center Regular Hexagon
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i * Math.PI) / 3;
+        const x = Math.cos(a) * HEX_RADIUS;
+        const y = Math.sin(a) * HEX_RADIUS;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = '#16162a';
+      ctx.fill();
+      ctx.strokeStyle = '#444470';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Draw Stacked Blocks on Sides
+      for (let s = 0; s < 6; s++) {
+        const stack = sides[s];
+        const a1 = (s * Math.PI) / 3;
+        const a2 = ((s + 1) * Math.PI) / 3;
+
+        stack.forEach((color, idx) => {
+          const rInner = HEX_RADIUS + idx * BLOCK_THICKNESS;
+          const rOuter = rInner + BLOCK_THICKNESS - 1;
+
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a1) * rInner, Math.sin(a1) * rInner);
+          ctx.lineTo(Math.cos(a2) * rInner, Math.sin(a2) * rInner);
+          ctx.lineTo(Math.cos(a2) * rOuter, Math.sin(a2) * rOuter);
+          ctx.lineTo(Math.cos(a1) * rOuter, Math.sin(a1) * rOuter);
+          ctx.closePath();
+
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 4;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
+      }
+
+      // Draw Falling Blocks
+      fallingBlocks.forEach(b => {
+        const a1 = (b.side * Math.PI) / 3;
+        const a2 = ((b.side + 1) * Math.PI) / 3;
+        const rInner = b.dist;
+        const rOuter = b.dist + BLOCK_THICKNESS - 1;
+
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a1) * rInner, Math.sin(a1) * rInner);
+        ctx.lineTo(Math.cos(a2) * rInner, Math.sin(a2) * rInner);
+        ctx.lineTo(Math.cos(a2) * rOuter, Math.sin(a2) * rOuter);
+        ctx.lineTo(Math.cos(a1) * rOuter, Math.sin(a1) * rOuter);
+        ctx.closePath();
+
+        ctx.fillStyle = b.color;
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      ctx.restore();
+
+      requestAnimationFrame(loop);
+    }
+
+    function loop() {
+      update();
+      draw();
+    }
+
+    // Input Listeners
+    window.addEventListener('keydown', e => {
+      getAudio();
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) rotateHex(1);
+      if (['ArrowRight', 'KeyD'].includes(e.code)) rotateHex(-1);
+    });
+
+    document.getElementById('rotLeft').onclick = () => rotateHex(1);
+    document.getElementById('rotRight').onclick = () => rotateHex(-1);
+
+    document.getElementById('startBtn').onclick = () => {
+      getAudio();
+      document.getElementById('startOverlay').style.display = 'none';
+      resetGame();
+      isPlaying = true;
+      isGameOver = false;
+    };
+
+    document.getElementById('restartBtn').onclick = () => {
+      getAudio();
+      document.getElementById('gameOverOverlay').style.display = 'none';
+      resetGame();
+      isPlaying = true;
+      isGameOver = false;
+    };
+
+    resetGame();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
