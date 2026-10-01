@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <filter id="mazeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Deep Arcade Black -->
+  <rect width="600" height="400" fill="#00000a"/>
+
+  <!-- Classic Blue Maze Neon Walls -->
+  <g filter="url(#mazeGlow)" stroke="#2121ff" stroke-width="4" fill="none" stroke-linejoin="round">
+    <!-- Outer maze borders -->
+    <rect x="25" y="25" width="550" height="350" rx="14"/>
+    <rect x="35" y="35" width="530" height="330" rx="10"/>
+
+    <!-- Labyrinth T and L shapes -->
+    <path d="M 80 80 H 160 V 130 H 80 Z"/>
+    <path d="M 210 80 H 390 V 110 H 210 Z"/>
+    <path d="M 440 80 H 520 V 130 H 440 Z"/>
+
+    <path d="M 80 270 H 160 V 320 H 80 Z"/>
+    <path d="M 210 290 H 390 V 320 H 210 Z"/>
+    <path d="M 440 270 H 520 V 320 H 440 Z"/>
+
+    <!-- Side corridors -->
+    <path d="M 25 180 H 120 V 220 H 25"/>
+    <path d="M 575 180 H 480 V 220 H 575"/>
+  </g>
+
+  <!-- Dots & Power Pellets on Center Track -->
+  <g fill="#ffb8ae">
+    <circle cx="280" cy="200" r="5"/>
+    <circle cx="320" cy="200" r="5"/>
+    <circle cx="360" cy="200" r="5"/>
+    <circle cx="400" cy="200" r="5"/>
+    <!-- Glowing Power Pellet -->
+    <circle cx="450" cy="200" r="11" fill="#ffe600" filter="url(#mazeGlow)"/>
+  </g>
+
+  <!-- Pac-Man Character -->
+  <g transform="translate(200, 200)">
+    <path d="M 0 0 L 26 -26 A 36 36 0 1 0 26 26 Z" fill="#ffff00" stroke="#000000" stroke-width="1.5" filter="url(#mazeGlow)"/>
+    <!-- Eye -->
+    <circle cx="2" cy="-18" r="4.5" fill="#000000"/>
+  </g>
+
+  <!-- Red Ghost Blinky -->
+  <g transform="translate(100, 172)">
+    <path d="M 0 30 V 16 A 18 18 0 0 1 36 16 V 30 L 30 26 L 24 30 L 18 26 L 12 30 L 6 26 Z" fill="#ff0000" filter="url(#mazeGlow)"/>
+    <!-- Ghost Eyes -->
+    <ellipse cx="12" cy="15" rx="5" ry="6" fill="#ffffff"/>
+    <ellipse cx="24" cy="15" rx="5" ry="6" fill="#ffffff"/>
+    <!-- Pupils facing right -->
+    <circle cx="14" cy="15" r="2.5" fill="#0000ff"/>
+    <circle cx="26" cy="15" r="2.5" fill="#0000ff"/>
+  </g>
+
+  <!-- Orange Ghost Clyde -->
+  <g transform="translate(48, 172)">
+    <path d="M 0 30 V 16 A 18 18 0 0 1 36 16 V 30 L 30 26 L 24 30 L 18 26 L 12 30 L 6 26 Z" fill="#ffb851" filter="url(#mazeGlow)"/>
+    <ellipse cx="12" cy="15" rx="5" ry="6" fill="#ffffff"/>
+    <ellipse cx="24" cy="15" rx="5" ry="6" fill="#ffffff"/>
+    <circle cx="14" cy="15" r="2.5" fill="#0000ff"/>
+    <circle cx="26" cy="15" r="2.5" fill="#0000ff"/>
+  </g>
+
+  <!-- Title Banner -->
+  <text x="300" y="60" font-family="'Impact', 'Arial Black', sans-serif" font-size="36" font-weight="900" fill="#ffff00" stroke="#000000" stroke-width="2" text-anchor="middle" letter-spacing="4">PAC-MAZE ARCADE</text>
+  <text x="300" y="355" font-family="'Courier New', monospace" font-size="14" font-weight="bold" fill="#ffb8ae" text-anchor="middle" letter-spacing="3">1UP: 035200   HIGH: 999900</text>
+</svg>

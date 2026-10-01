@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="breakoutBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a051b"/>
+      <stop offset="100%" stop-color="#190d35"/>
+    </linearGradient>
+    <filter id="neonBreakoutGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark Arcade Space -->
+  <rect width="600" height="400" fill="url(#breakoutBg)"/>
+
+  <!-- Arena Border -->
+  <rect x="30" y="20" width="540" height="360" rx="8" fill="none" stroke="#ff007f" stroke-width="2" opacity="0.3"/>
+
+  <!-- Rainbow Neon Brick Rows -->
+  <g filter="url(#neonBreakoutGlow)">
+    <!-- Row 1: Neon Red Bricks -->
+    <rect x="50" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+    <rect x="130" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+    <rect x="210" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+    <rect x="290" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+    <rect x="370" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+    <rect x="450" y="50" width="70" height="20" rx="3" fill="#ff0055"/>
+
+    <!-- Row 2: Neon Orange Bricks -->
+    <rect x="50" y="78" width="70" height="20" rx="3" fill="#ff7700"/>
+    <rect x="130" y="78" width="70" height="20" rx="3" fill="#ff7700"/>
+    <!-- Broken brick particle effect at 210 -->
+    <rect x="290" y="78" width="70" height="20" rx="3" fill="#ff7700"/>
+    <rect x="370" y="78" width="70" height="20" rx="3" fill="#ff7700"/>
+    <rect x="450" y="78" width="70" height="20" rx="3" fill="#ff7700"/>
+
+    <!-- Row 3: Neon Yellow Bricks -->
+    <rect x="50" y="106" width="70" height="20" rx="3" fill="#ffe600"/>
+    <rect x="130" y="106" width="70" height="20" rx="3" fill="#ffe600"/>
+    <!-- Broken brick -->
+    <rect x="290" y="106" width="70" height="20" rx="3" fill="#ffe600"/>
+    <rect x="370" y="106" width="70" height="20" rx="3" fill="#ffe600"/>
+    <rect x="450" y="106" width="70" height="20" rx="3" fill="#ffe600"/>
+
+    <!-- Row 4: Neon Green Bricks -->
+    <rect x="50" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+    <rect x="130" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+    <rect x="210" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+    <rect x="290" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+    <rect x="370" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+    <rect x="450" y="134" width="70" height="20" rx="3" fill="#00ff66"/>
+
+    <!-- Row 5: Neon Cyan Bricks -->
+    <rect x="50" y="162" width="70" height="20" rx="3" fill="#00f3ff"/>
+    <rect x="130" y="162" width="70" height="20" rx="3" fill="#00f3ff"/>
+    <rect x="210" y="162" width="70" height="20" rx="3" fill="#00f3ff"/>
+    <rect x="370" y="162" width="70" height="20" rx="3" fill="#00f3ff"/>
+    <rect x="450" y="162" width="70" height="20" rx="3" fill="#00f3ff"/>
+  </g>
+
+  <!-- Brick Shatter Sparks & Particles around (240, 95) -->
+  <g fill="#ffe600" opacity="0.9">
+    <circle cx="215" cy="85" r="4"/>
+    <circle cx="235" cy="72" r="3"/>
+    <circle cx="255" cy="90" r="5"/>
+    <circle cx="265" cy="115" r="3"/>
+    <circle cx="225" cy="105" r="4"/>
+  </g>
+
+  <!-- Energy Ball with Motion Trail -->
+  <line x1="280" y1="280" x2="245" y2="120" stroke="#00f3ff" stroke-width="3" stroke-dasharray="4,6" opacity="0.4"/>
+  <g filter="url(#neonBreakoutGlow)">
+    <circle cx="245" cy="115" r="10" fill="#ffffff" stroke="#00f3ff" stroke-width="3"/>
+  </g>
+
+  <!-- Player Neon Paddle -->
+  <g filter="url(#neonBreakoutGlow)">
+    <rect x="220" y="325" width="120" height="18" rx="9" fill="#00f3ff" stroke="#ffffff" stroke-width="2"/>
+    <rect x="240" y="328" width="80" height="12" rx="6" fill="#ffffff"/>
+  </g>
+
+  <!-- Title & Typography -->
+  <g filter="url(#neonBreakoutGlow)">
+    <text x="300" y="240" font-family="'Impact', 'Arial Black', sans-serif" font-size="42" font-weight="900" fill="#00f3ff" text-anchor="middle" letter-spacing="4">NEON BREAKOUT</text>
+    <text x="300" y="238" font-family="'Impact', 'Arial Black', sans-serif" font-size="42" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">NEON BREAKOUT</text>
+  </g>
+  <text x="300" y="270" font-family="'Segoe UI Black', sans-serif" font-size="16" font-weight="bold" fill="#ff007f" text-anchor="middle" letter-spacing="6">3000 RETRO ARCADE</text>
+</svg>

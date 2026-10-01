@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0b1a"/>
+      <stop offset="50%" stop-color="#120c24"/>
+      <stop offset="100%" stop-color="#050510"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#251e3e" stroke-width="0.75" opacity="0.6"/>
+    </pattern>
+  </defs>
+
+  <!-- Background & Grid -->
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <rect width="600" height="400" fill="url(#grid)"/>
+
+  <!-- Matrix Playfield Outline -->
+  <rect x="180" y="30" width="240" height="340" rx="8" fill="#080714" stroke="#ff007f" stroke-width="2" opacity="0.4"/>
+
+  <!-- Ghost Shadow & Completed Lines -->
+  <rect x="200" y="310" width="200" height="25" fill="#00f3ff" opacity="0.15"/>
+  <rect x="200" y="338" width="200" height="25" fill="#ffe600" opacity="0.15"/>
+
+  <!-- Falling & Placed Tetrominoes -->
+  <!-- Cyan I-Piece (Falling) -->
+  <g filter="url(#glow)">
+    <rect x="250" y="70" width="100" height="25" rx="4" fill="#00f3ff" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="275" y1="70" x2="275" y2="95" stroke="#00b4d8" stroke-width="1"/>
+    <line x1="300" y1="70" x2="300" y2="95" stroke="#00b4d8" stroke-width="1"/>
+    <line x1="325" y1="70" x2="325" y2="95" stroke="#00b4d8" stroke-width="1"/>
+  </g>
+
+  <!-- Purple T-Piece -->
+  <g filter="url(#glow)">
+    <path d="M 275 140 h 75 v 25 h -25 v 25 h -25 v -25 h -25 z" fill="#b026ff" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Yellow O-Piece -->
+  <g filter="url(#glow)">
+    <rect x="210" y="240" width="50" height="50" rx="4" fill="#ffe600" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="235" y1="240" x2="235" y2="290" stroke="#ccaa00" stroke-width="1"/>
+    <line x1="210" y1="265" x2="260" y2="265" stroke="#ccaa00" stroke-width="1"/>
+  </g>
+
+  <!-- Green S-Piece -->
+  <g filter="url(#glow)">
+    <path d="M 335 240 h 50 v 25 h -25 v 25 h -50 v -25 h 25 z" fill="#00ff66" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Red Z-Piece -->
+  <g filter="url(#glow)">
+    <path d="M 260 265 h 50 v 25 h -25 v 25 h -50 v -25 h 25 z" fill="#ff0055" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Orange L-Piece -->
+  <g filter="url(#glow)">
+    <path d="M 335 170 h 25 v 50 h 25 v 25 h -50 z" fill="#ff7700" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Blue J-Piece -->
+  <g filter="url(#glow)">
+    <path d="M 235 170 h 25 v 75 h -25 z" fill="#0066ff" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- Neon Combo Banner -->
+  <g filter="url(#glow)">
+    <rect x="35" y="325" width="130" height="35" rx="6" fill="#ff007f" opacity="0.9"/>
+    <text x="100" y="348" font-family="'Impact', 'Segoe UI Black', sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">TETRIS x4</text>
+  </g>
+
+  <!-- Big Title Header -->
+  <g filter="url(#glow)">
+    <text x="300" y="52" font-family="'Impact', 'Arial Black', sans-serif" font-size="34" font-weight="900" fill="#00f3ff" text-anchor="middle" letter-spacing="4">TETRIS</text>
+    <text x="300" y="50" font-family="'Impact', 'Arial Black', sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">TETRIS</text>
+  </g>
+  <text x="300" y="74" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#ff007f" text-anchor="middle" letter-spacing="3">BRICK DROP RETRO</text>
+</svg>

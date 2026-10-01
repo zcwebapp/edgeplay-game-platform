@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg2048" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f1a24"/>
+      <stop offset="100%" stop-color="#0e0c12"/>
+    </linearGradient>
+    <linearGradient id="goldTile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffdf00"/>
+      <stop offset="50%" stop-color="#f5a623"/>
+      <stop offset="100%" stop-color="#d0021b"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#bg2048)"/>
+
+  <!-- Top Title & Score -->
+  <text x="50" y="70" font-family="'Impact', 'Arial Black', sans-serif" font-size="52" font-weight="900" fill="#f5a623" letter-spacing="2">2048</text>
+  <text x="52" y="98" font-family="'Segoe UI', sans-serif" font-size="14" font-weight="bold" fill="#8f7a66" letter-spacing="1">ARCADE SLIDER</text>
+
+  <!-- Score Box -->
+  <rect x="360" y="35" width="100" height="55" rx="6" fill="#bbada0" opacity="0.3"/>
+  <text x="410" y="55" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="#eee4da" text-anchor="middle">SCORE</text>
+  <text x="410" y="78" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">138,420</text>
+
+  <!-- Best Box -->
+  <rect x="475" y="35" width="90" height="55" rx="6" fill="#bbada0" opacity="0.3"/>
+  <text x="520" y="55" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="#eee4da" text-anchor="middle">BEST</text>
+  <text x="520" y="78" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">204,800</text>
+
+  <!-- Board Container -->
+  <rect x="160" y="115" width="280" height="260" rx="12" fill="#bbada0" opacity="0.25"/>
+
+  <!-- Row 1 -->
+  <!-- 2 -->
+  <rect x="175" y="130" width="55" height="55" rx="6" fill="#eee4da"/>
+  <text x="202" y="166" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="900" fill="#776e65" text-anchor="middle">2</text>
+  <!-- 4 -->
+  <rect x="240" y="130" width="55" height="55" rx="6" fill="#ede0c8"/>
+  <text x="267" y="166" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="900" fill="#776e65" text-anchor="middle">4</text>
+  <!-- 8 -->
+  <rect x="305" y="130" width="55" height="55" rx="6" fill="#f2b179"/>
+  <text x="332" y="166" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="900" fill="#f9f6f2" text-anchor="middle">8</text>
+  <!-- 16 -->
+  <rect x="370" y="130" width="55" height="55" rx="6" fill="#f59563"/>
+  <text x="397" y="166" font-family="'Segoe UI', Arial, sans-serif" font-size="26" font-weight="900" fill="#f9f6f2" text-anchor="middle">16</text>
+
+  <!-- Row 2 -->
+  <!-- 32 -->
+  <rect x="175" y="195" width="55" height="55" rx="6" fill="#f67c5f"/>
+  <text x="202" y="231" font-family="'Segoe UI', Arial, sans-serif" font-size="26" font-weight="900" fill="#f9f6f2" text-anchor="middle">32</text>
+  <!-- 64 -->
+  <rect x="240" y="195" width="55" height="55" rx="6" fill="#f65e3b"/>
+  <text x="267" y="231" font-family="'Segoe UI', Arial, sans-serif" font-size="26" font-weight="900" fill="#f9f6f2" text-anchor="middle">64</text>
+  <!-- 128 -->
+  <rect x="305" y="195" width="55" height="55" rx="6" fill="#edcf72"/>
+  <text x="332" y="230" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="900" fill="#f9f6f2" text-anchor="middle">128</text>
+  <!-- 256 -->
+  <rect x="370" y="195" width="55" height="55" rx="6" fill="#edcc61"/>
+  <text x="397" y="230" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="900" fill="#f9f6f2" text-anchor="middle">256</text>
+
+  <!-- Row 3 -->
+  <!-- 512 -->
+  <rect x="175" y="260" width="55" height="55" rx="6" fill="#edc850"/>
+  <text x="202" y="295" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="900" fill="#f9f6f2" text-anchor="middle">512</text>
+  <!-- 1024 -->
+  <rect x="240" y="260" width="55" height="55" rx="6" fill="#edc53f"/>
+  <text x="267" y="295" font-family="'Segoe UI', Arial, sans-serif" font-size="19" font-weight="900" fill="#f9f6f2" text-anchor="middle">1024</text>
+  <!-- 2048 (GIANT GLOWING TILE) -->
+  <g filter="url(#goldGlow)">
+    <rect x="305" y="260" width="120" height="105" rx="8" fill="url(#goldTile)" stroke="#ffffff" stroke-width="2"/>
+    <text x="365" y="325" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">2048</text>
+  </g>
+
+  <!-- Row 4 -->
+  <!-- 2 -->
+  <rect x="175" y="325" width="55" height="40" rx="6" fill="#eee4da"/>
+  <text x="202" y="352" font-family="'Segoe UI', Arial, sans-serif" font-size="24" font-weight="900" fill="#776e65" text-anchor="middle">2</text>
+  <!-- 4 -->
+  <rect x="240" y="325" width="55" height="40" rx="6" fill="#ede0c8"/>
+  <text x="267" y="352" font-family="'Segoe UI', Arial, sans-serif" font-size="24" font-weight="900" fill="#776e65" text-anchor="middle">4</text>
+</svg>

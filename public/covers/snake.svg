@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="crtBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#021405"/>
+      <stop offset="50%" stop-color="#03200a"/>
+      <stop offset="100%" stop-color="#010c03"/>
+    </linearGradient>
+    <filter id="neonGreenGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="appleGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="crtGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none" stroke="#00ff66" stroke-width="0.5" opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <!-- CRT Screen Background & Grid -->
+  <rect width="600" height="400" fill="url(#crtBg)"/>
+  <rect width="600" height="400" fill="url(#crtGrid)"/>
+
+  <!-- CRT Screen Bezel / Border -->
+  <rect x="20" y="20" width="560" height="360" rx="16" fill="none" stroke="#00ff66" stroke-width="2" opacity="0.4"/>
+  <rect x="25" y="25" width="550" height="350" rx="12" fill="none" stroke="#00ff66" stroke-width="1" opacity="0.2"/>
+
+  <!-- Scanlines Effect -->
+  <path d="M 20 40 H 580 M 20 60 H 580 M 20 80 H 580 M 20 100 H 580 M 20 120 H 580 M 20 140 H 580 M 20 160 H 580 M 20 180 H 580 M 20 200 H 580 M 20 220 H 580 M 20 240 H 580 M 20 260 H 580 M 20 280 H 580 M 20 300 H 580 M 20 320 H 580 M 20 340 H 580 M 20 360 H 580" stroke="#00ff66" stroke-width="0.6" opacity="0.08"/>
+
+  <!-- Top Status Bar -->
+  <text x="45" y="55" font-family="'Courier New', monospace" font-size="16" font-weight="900" fill="#00ff66" opacity="0.8">SCORE: 09850</text>
+  <text x="300" y="55" font-family="'Courier New', monospace" font-size="16" font-weight="900" fill="#00ff66" opacity="0.8" text-anchor="middle">SPEED: 10x</text>
+  <text x="555" y="55" font-family="'Courier New', monospace" font-size="16" font-weight="900" fill="#00ff66" opacity="0.8" text-anchor="end">LENGTH: 42</text>
+
+  <!-- Glowing Neon Pixel Snake Body -->
+  <g filter="url(#neonGreenGlow)" fill="#00ff66" stroke="#003311" stroke-width="1">
+    <!-- Snake Tail to Body -->
+    <rect x="80" y="240" width="18" height="18" rx="2" opacity="0.7"/>
+    <rect x="100" y="240" width="18" height="18" rx="2" opacity="0.75"/>
+    <rect x="120" y="240" width="18" height="18" rx="2" opacity="0.8"/>
+    <rect x="140" y="240" width="18" height="18" rx="2"/>
+    <rect x="160" y="240" width="18" height="18" rx="2"/>
+    <rect x="160" y="220" width="18" height="18" rx="2"/>
+    <rect x="160" y="200" width="18" height="18" rx="2"/>
+    <rect x="180" y="200" width="18" height="18" rx="2"/>
+    <rect x="200" y="200" width="18" height="18" rx="2"/>
+    <rect x="220" y="200" width="18" height="18" rx="2"/>
+    <rect x="240" y="200" width="18" height="18" rx="2"/>
+    <rect x="240" y="180" width="18" height="18" rx="2"/>
+    <rect x="240" y="160" width="18" height="18" rx="2"/>
+    <rect x="260" y="160" width="18" height="18" rx="2"/>
+    <rect x="280" y="160" width="18" height="18" rx="2"/>
+    <rect x="300" y="160" width="18" height="18" rx="2"/>
+    <rect x="320" y="160" width="18" height="18" rx="2"/>
+    <rect x="340" y="160" width="18" height="18" rx="2"/>
+    <rect x="360" y="160" width="18" height="18" rx="2"/>
+    <rect x="360" y="180" width="18" height="18" rx="2"/>
+    <rect x="360" y="200" width="18" height="18" rx="2"/>
+    <rect x="380" y="200" width="18" height="18" rx="2"/>
+    <rect x="400" y="200" width="18" height="18" rx="2"/>
+    <!-- Snake Head -->
+    <rect x="420" y="200" width="20" height="20" rx="3" fill="#ffffff" stroke="#00ff66" stroke-width="2"/>
+    <!-- Snake Eyes -->
+    <circle cx="432" cy="206" r="2.5" fill="#ff0055"/>
+    <circle cx="432" cy="214" r="2.5" fill="#ff0055"/>
+  </g>
+
+  <!-- Glowing Food / Apple -->
+  <g filter="url(#appleGlow)">
+    <circle cx="480" cy="210" r="10" fill="#ff0055"/>
+    <rect x="479" y="196" width="3" height="6" rx="1" fill="#00ff66"/>
+  </g>
+
+  <!-- Main Game Logo Title -->
+  <g filter="url(#neonGreenGlow)">
+    <text x="300" y="320" font-family="'Impact', 'Arial Black', monospace" font-size="44" font-weight="900" fill="#00ff66" text-anchor="middle" letter-spacing="4">CYBER SNAKE</text>
+    <text x="300" y="318" font-family="'Impact', 'Arial Black', monospace" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">CYBER SNAKE</text>
+  </g>
+  <text x="300" y="348" font-family="'Courier New', monospace" font-size="14" font-weight="bold" fill="#00ff66" text-anchor="middle" letter-spacing="4">1984 PHOSPHOR CRT EDITION</text>
+</svg>
