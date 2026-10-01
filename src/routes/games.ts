@@ -9,6 +9,11 @@ export async function handleGames(request: Request, env: Env): Promise<Response>
   const pathParts = url.pathname.replace(/^\/api\/v1\/games\/?/, '').split('/');
   const gameIdentifier = pathParts[0];
 
+  // Distribution Sync Route: POST /api/v1/games/sync
+  if (gameIdentifier === 'sync' && request.method === 'POST') {
+    return syncDistributionGames(request, env);
+  }
+
   // Specific game routes
   if (gameIdentifier && gameIdentifier.length > 0) {
     if (pathParts[1] === 'play' && request.method === 'POST') {
@@ -117,5 +122,56 @@ async function recordPlay(identifier: string, env: Env): Promise<Response> {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return errorResponse('Failed to record play', 500, message);
+  }
+}
+
+/**
+ * Ingest or sync games from game distribution feeds into D1
+ */
+async function syncDistributionGames(request: Request, env: Env): Promise<Response> {
+  try {
+    const body = await request.json().catch(() => ({})) as { games?: Game[] };
+    const gamesList = body.games || [];
+
+    if (gamesList.length === 0) {
+      return errorResponse('No games provided for sync. Pass an array of game objects.', 400);
+    }
+
+    let inserted = 0;
+    for (const g of gamesList) {
+      const sql = `
+        INSERT OR REPLACE INTO games (
+          id, slug, title, description, category, tags, developer,
+          source_type, entry_url, thumbnail_url, orientation, play_count,
+          rating_avg, status, is_featured
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?)
+      `;
+      await env.DB.prepare(sql).bind(
+        g.id,
+        g.slug,
+        g.title,
+        g.description || '',
+        g.category || 'arcade',
+        typeof g.tags === 'string' ? g.tags : JSON.stringify(g.tags || []),
+        g.developer || 'GamePix Distribution',
+        g.source_type || 'gamepix',
+        g.entry_url,
+        g.thumbnail_url,
+        g.orientation || 'landscape',
+        g.play_count || 10000,
+        g.rating_avg || 4.8,
+        g.is_featured ? 1 : 0
+      ).run();
+      inserted++;
+    }
+
+    return jsonResponse({
+      success: true,
+      message: `Successfully synchronized ${inserted} games to Cloudflare D1.`,
+      count: inserted,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return errorResponse('Failed to sync games', 500, message);
   }
 }

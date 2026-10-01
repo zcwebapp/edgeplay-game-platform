@@ -117,6 +117,12 @@ function renderGames(games) {
         </div>
         <div style="padding: 14px; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
           <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-family: var(--font-mono); font-size: 10px; color: ${game.source_type === 'gamepix' ? '#00e5ff' : '#00ff66'}; font-weight: bold;">
+                ${game.source_type === 'gamepix' ? '🌐 GAMEPIX FEED' : '💾 R2 SELF-HOSTED'}
+              </span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: #777;">${(game.developer || '').slice(0, 16)}</span>
+            </div>
             <h3 style="font-family: var(--font-title); font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">
               <a href="game.html?id=${game.slug || game.id}" style="color: inherit; text-decoration: none;">${game.title}</a>
             </h3>

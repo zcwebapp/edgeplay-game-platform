@@ -169,6 +169,7 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="badge-pixel badge-cyan" id="gameSourceBadge">🌐 GAMEPIX</span>
       <span class="badge-pixel badge-gold" id="gameCategory">ARCADE</span>
       <span id="playerScoreDisplay" style="font-family: var(--font-pixel); font-size: 12px; color: var(--color-cyan);">SCORE: 0</span>
     </div>
@@ -179,7 +180,7 @@
     <!-- Center Cabinet Theater -->
     <div class="theater-casing">
       <div class="monitor-frame crt-overlay" id="monitorFrame">
-        <iframe id="gameIframe" src="about:blank" allow="autoplay; fullscreen; gamepad"></iframe>
+        <iframe id="gameIframe" src="about:blank" allow="autoplay; fullscreen; gamepad; accelerometer; gyroscope; payment; web-share"></iframe>
       </div>
 
       <!-- Arcade Hardware Deck -->
@@ -262,6 +263,13 @@
       document.getElementById('gameSubTitle').textContent = currentGame.title;
       document.getElementById('gameCategory').textContent = currentGame.category.toUpperCase();
       document.getElementById('gameDesc').textContent = currentGame.description;
+
+      const isGamepix = currentGame.source_type === 'gamepix';
+      const badgeEl = document.getElementById('gameSourceBadge');
+      if (badgeEl) {
+        badgeEl.textContent = isGamepix ? '🌐 GAMEPIX FEED' : '💾 R2 SELF-HOSTED';
+        badgeEl.className = isGamepix ? 'badge-pixel badge-cyan' : 'badge-pixel badge-green';
+      }
 
       const tagsContainer = document.getElementById('gameTags');
       if (currentGame.tags) {
