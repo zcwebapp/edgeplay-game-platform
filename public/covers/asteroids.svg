@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <filter id="vectorGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Deep Black Screen -->
+  <rect width="600" height="400" fill="#030303"/>
+
+  <!-- Phosphor Vector Wireframe Asteroids -->
+  <g filter="url(#vectorGlow)" stroke="#00ff66" stroke-width="2.5" fill="none" stroke-linejoin="round">
+    <!-- Big Asteroid 1 (Left) -->
+    <polygon points="60,110 110,80 160,100 180,150 150,210 90,220 50,170"/>
+
+    <!-- Big Asteroid 2 (Right) -->
+    <polygon points="440,90 510,70 560,120 540,190 480,210 420,160 410,120"/>
+
+    <!-- Medium Fragmented Asteroid (Bottom Center) -->
+    <polygon points="210,310 240,280 280,290 290,330 250,360 200,340"/>
+
+    <!-- Small Asteroid (Top Right) -->
+    <polygon points="340,90 360,75 385,85 380,105 355,115"/>
+
+    <!-- Player Vector Starship (Center) -->
+    <polygon points="300,180 320,240 300,230 280,240" stroke="#ffffff" stroke-width="3"/>
+    <!-- Hyperspace / Thrust Flame -->
+    <polygon points="295,235 300,255 305,235" stroke="#ff0055" stroke-width="2"/>
+
+    <!-- Fired Bullet Particles -->
+    <circle cx="300" cy="150" r="2.5" fill="#ffffff" stroke="#ffffff"/>
+    <circle cx="300" cy="115" r="2.5" fill="#ffffff" stroke="#ffffff"/>
+  </g>
+
+  <!-- Score & Lives Top Display -->
+  <text x="50" y="50" font-family="'Courier New', monospace" font-size="20" font-weight="900" fill="#00ff66" filter="url(#vectorGlow)">SCORE: 28,800</text>
+  <text x="550" y="50" font-family="'Courier New', monospace" font-size="20" font-weight="900" fill="#00ff66" text-anchor="end" filter="url(#vectorGlow)">SHIPS: ▲ ▲ ▲</text>
+
+  <!-- Title Bottom -->
+  <g filter="url(#vectorGlow)">
+    <text x="300" y="320" font-family="'Impact', 'Arial Black', monospace" font-size="40" font-weight="900" fill="#00ff66" text-anchor="middle" letter-spacing="5">VECTOR ASTEROIDS</text>
+    <text x="300" y="318" font-family="'Impact', 'Arial Black', monospace" font-size="40" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="5">VECTOR ASTEROIDS</text>
+  </g>
+  <text x="300" y="350" font-family="'Courier New', monospace" font-size="13" font-weight="bold" fill="#00ff66" text-anchor="middle" letter-spacing="3">1979 ATARI COIN-OP REBORN</text>
+</svg>

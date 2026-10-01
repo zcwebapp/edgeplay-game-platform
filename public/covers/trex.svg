@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="synthBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b001a"/>
+      <stop offset="60%" stop-color="#38084a"/>
+      <stop offset="100%" stop-color="#120024"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe600"/>
+      <stop offset="50%" stop-color="#ff007f"/>
+      <stop offset="100%" stop-color="#7900ff"/>
+    </linearGradient>
+    <filter id="synthGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="600" height="400" fill="url(#synthBg)"/>
+
+  <!-- Synthwave Sunset Sun with horizontal blind cuts -->
+  <g transform="translate(300, 150)">
+    <circle cx="0" cy="0" r="75" fill="url(#sunGrad)"/>
+    <line x1="-75" y1="5" x2="75" y2="5" stroke="#38084a" stroke-width="4"/>
+    <line x1="-70" y1="18" x2="70" y2="18" stroke="#38084a" stroke-width="5"/>
+    <line x1="-65" y1="33" x2="65" y2="33" stroke="#38084a" stroke-width="6"/>
+    <line x1="-55" y1="50" x2="55" y2="50" stroke="#38084a" stroke-width="8"/>
+    <line x1="-40" y1="68" x2="40" y2="68" stroke="#38084a" stroke-width="9"/>
+  </g>
+
+  <!-- Pterodactyl Flying in Sky -->
+  <g transform="translate(420, 85)" fill="#00f3ff" opacity="0.85">
+    <path d="M 0 10 L 15 0 L 30 10 L 25 14 L 15 8 L 5 14 Z"/>
+    <polygon points="12,8 20,8 16,14"/>
+  </g>
+
+  <!-- Horizon Line -->
+  <line x1="0" y1="280" x2="600" y2="280" stroke="#ff007f" stroke-width="3" filter="url(#synthGlow)"/>
+
+  <!-- Perspective Grid Lines on Ground -->
+  <line x1="300" y1="280" x2="0" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="300" y1="280" x2="120" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="300" y1="280" x2="240" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="300" y1="280" x2="360" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="300" y1="280" x2="480" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="300" y1="280" x2="600" y2="400" stroke="#ff007f" stroke-width="1.5" opacity="0.4"/>
+  <line x1="0" y1="310" x2="600" y2="310" stroke="#ff007f" stroke-width="1" opacity="0.3"/>
+  <line x1="0" y1="345" x2="600" y2="345" stroke="#ff007f" stroke-width="1.2" opacity="0.3"/>
+
+  <!-- Pixel Cacti Obstacles -->
+  <g transform="translate(450, 215)" fill="#00ff66" filter="url(#synthGlow)">
+    <!-- Main stem -->
+    <rect x="16" y="0" width="10" height="65" rx="2"/>
+    <!-- Left arm -->
+    <rect x="0" y="20" width="8" height="24" rx="2"/>
+    <rect x="0" y="38" width="18" height="8" rx="2"/>
+    <!-- Right arm -->
+    <rect x="24" y="12" width="8" height="26" rx="2"/>
+    <rect x="18" y="32" width="14" height="8" rx="2"/>
+  </g>
+
+  <!-- 8-Bit Pixel T-Rex Dinosaur Running -->
+  <g transform="translate(130, 185)" fill="#00f3ff" filter="url(#synthGlow)">
+    <!-- Head & Snout -->
+    <rect x="40" y="0" width="45" height="30" rx="3"/>
+    <rect x="55" y="30" width="30" height="10"/>
+    <!-- Eye hole -->
+    <rect x="50" y="6" width="6" height="6" fill="#0b001a"/>
+    <!-- Teeth -->
+    <rect x="75" y="25" width="4" height="4" fill="#0b001a"/>
+    <!-- Neck & Body -->
+    <rect x="25" y="25" width="30" height="40" rx="3"/>
+    <!-- Tail -->
+    <rect x="0" y="45" width="28" height="12" rx="2"/>
+    <rect x="5" y="38" width="15" height="10"/>
+    <!-- Tiny Arm -->
+    <rect x="52" y="42" width="12" height="5" rx="1"/>
+    <!-- Running Legs -->
+    <rect x="25" y="65" width="8" height="28"/>
+    <rect x="25" y="90" width="14" height="5"/>
+    <rect x="42" y="65" width="8" height="22"/>
+    <rect x="42" y="84" width="14" height="5"/>
+  </g>
+
+  <!-- Title & Typography -->
+  <g filter="url(#synthGlow)">
+    <text x="300" y="50" font-family="'Impact', 'Arial Black', sans-serif" font-size="36" font-weight="900" fill="#00f3ff" text-anchor="middle" letter-spacing="4">CYBER T-REX RUNNER</text>
+  </g>
+  <text x="300" y="380" font-family="'Courier New', monospace" font-size="14" font-weight="bold" fill="#ffe600" text-anchor="middle" letter-spacing="4">SYNTHWAVE INFINITE RUNNER</text>
+</svg>
